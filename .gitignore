@@ -1,0 +1,13 @@
+.venv/
+.env
+__pycache__/
+.pytest_cache/
+*.pyc
+.DS_Store
+data/interim/
+data/run_logs/
+data.run1/
+.vercel/
+.vercel
+.env*
+.impeccable/review/

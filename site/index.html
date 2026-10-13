@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Independent, unofficial analysis of public reviews of the Wispr Flow mobile apps, with evidence you can browse.">
+  <title>Wispr Flow app reviews</title>
+  <link rel="icon" href="data:,">
+  <meta name="theme-color" content="#034f46">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <div class="masthead"><header class="page-header shell">
+    <div>
+      <h1>Wispr Flow app reviews</h1>
+      <p id="subtitle" class="subtitle">Loading review summary…</p>
+      <p class="byline">Built by <strong>Abhinav Gupta</strong>, MS Product Management at CMU <span aria-hidden="true">·</span> <a href="https://www.linkedin.com/in/abhinavgupta0809" target="_blank" rel="noopener">LinkedIn</a> <span aria-hidden="true">·</span> <a href="https://github.com/abhinavgupta0809" target="_blank" rel="noopener">GitHub</a></p>
+    </div>
+    <div class="header-actions">
+      <a class="button" href="raw_reviews.csv" download><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7.5m0 0L5 7m3 3l3-3M3 13h10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Reviews CSV</span></a>
+      <a class="button" href="annotated_reviews.csv" download><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7.5m0 0L5 7m3 3l3-3M3 13h10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Annotated CSV</span></a>
+      <button id="theme" type="button" aria-label="Switch color theme"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg><span>Theme</span></button>
+    </div>
+  </header></div>
+  <div class="control-wrap"><div class="controls shell">
+    <nav id="tabs" role="tablist" aria-label="Dashboard views">
+      <button id="tab-overview" role="tab" aria-controls="content" data-tab="overview">Overview</button>
+      <button id="tab-deep-dive" role="tab" aria-controls="content" data-tab="deep-dive">Deep Dive</button>
+      <button id="tab-opportunities" role="tab" aria-controls="content" data-tab="opportunities">Opportunities</button>
+      <button id="tab-reviews" role="tab" aria-controls="content" data-tab="reviews">Reviews</button>
+    </nav>
+    <div id="platforms" class="segmented" role="group" aria-label="Platform"><button data-platform="all">All</button><button data-platform="android">Android</button><button data-platform="ios">iOS</button></div>
+  </div></div>
+  <main id="content" class="shell" role="tabpanel" aria-live="polite"><div class="skeleton" aria-label="Loading dashboard"></div></main>
+  <div class="footer-wrap"><footer id="footer" class="shell"></footer></div>
+  <div id="drawer-backdrop" class="backdrop" hidden><aside id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><header class="drawer-header"><h2 id="drawer-title"></h2><button id="drawer-close" type="button" aria-label="Close review drawer"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Close</span></button></header><div id="drawer-content"></div></aside></div>
+</body>
+</html>

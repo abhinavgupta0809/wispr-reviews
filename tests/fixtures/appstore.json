@@ -1,0 +1,25 @@
+{
+  "feed": {
+    "entry": [
+      {"id": {"attributes": {"im:id": "1668000334"}}, "im:artist": {"label": "App publisher"}},
+      {
+        "id": {"label": "fixture-ios-1"},
+        "updated": {"label": "2026-10-07T03:00:00-07:00"},
+        "im:rating": {"label": "4"},
+        "im:version": {"label": "2.1.0"},
+        "title": {"label": "A useful tool"},
+        "content": {"label": "  Useful\nfor everyday questions.  "},
+        "im:voteSum": {"label": "7"},
+        "im:voteCount": {"label": "8"}
+      },
+      {
+        "id": {"label": "fixture-ios-2"},
+        "updated": {"label": "2026-10-06T09:00:00Z"},
+        "im:rating": {"label": "1"},
+        "title": {"label": "Loading issue"},
+        "content": {"label": "Cannot load a response"},
+        "im:voteSum": {"label": "0"}
+      }
+    ]
+  }
+}

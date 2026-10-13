@@ -1,0 +1,24 @@
+[
+  {
+    "i": 0,
+    "labels": ["Specific Complaint"],
+    "categories": ["Bugs & Stability"],
+    "sentiment": 2,
+    "language": "en",
+    "english_translation": "",
+    "topic": "loading issue",
+    "competitors": [],
+    "regression_claim": false
+  },
+  {
+    "i": 0,
+    "labels": ["Generic Good"],
+    "categories": [],
+    "sentiment": 4,
+    "language": "en",
+    "english_translation": "",
+    "topic": "",
+    "competitors": [],
+    "regression_claim": false
+  }
+]

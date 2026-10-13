@@ -1,0 +1,30 @@
+[
+  {
+    "review_id": "play_fixture-1",
+    "platform": "android",
+    "country": "",
+    "store_lang": "en",
+    "timestamp": "2026-10-07T12:30:00Z",
+    "date_utc": "2026-10-07",
+    "rating": 5,
+    "title": "",
+    "review_text": "Helpful answers.\nKeeps my exact spacing!  ☃",
+    "app_version": "2.1.0",
+    "thumbs_up": 3,
+    "has_dev_reply": "FALSE"
+  },
+  {
+    "review_id": "ios_fixture-ios-1",
+    "platform": "ios",
+    "country": "gb",
+    "store_lang": "",
+    "timestamp": "2026-10-07T10:00:00Z",
+    "date_utc": "2026-10-07",
+    "rating": 4,
+    "title": "A useful tool",
+    "review_text": "  Useful\nfor everyday questions.  ",
+    "app_version": "2.1.0",
+    "thumbs_up": 7,
+    "has_dev_reply": "FALSE"
+  }
+]

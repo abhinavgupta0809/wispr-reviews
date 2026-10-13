@@ -1,0 +1,73 @@
+{
+  "version": "1",
+  "labels": [
+    "Specific Praise",
+    "Specific Complaint",
+    "Feature Request",
+    "Generic Good",
+    "Generic Bad",
+    "Nonsense"
+  ],
+  "specific_labels": [
+    "Specific Praise",
+    "Specific Complaint",
+    "Feature Request"
+  ],
+  "generic_labels": [
+    "Generic Good",
+    "Generic Bad"
+  ],
+  "forbidden_label_pairs": [
+    [
+      "Generic Good",
+      "Specific Praise"
+    ],
+    [
+      "Generic Bad",
+      "Specific Complaint"
+    ],
+    [
+      "Generic Good",
+      "Generic Bad"
+    ]
+  ],
+  "categories": [
+    "Transcription Accuracy",
+    "AI Editing & Formatting",
+    "Language Support",
+    "Free Word Limit",
+    "Pricing & Value",
+    "Billing & Subscription",
+    "Customer Support",
+    "Login & Account",
+    "Setup & Permissions",
+    "Floating Bubble & Overlay",
+    "Keyboard & App Switching",
+    "Reliability & Bugs",
+    "Speed",
+    "Battery & Performance",
+    "Privacy & Security",
+    "Ads & Marketing",
+    "Desktop & Platform Parity",
+    "Notes & History",
+    "UI / UX",
+    "Productivity & Time Saved",
+    "Use Cases",
+    "Other"
+  ],
+  "competitors": [
+    "Google Voice Typing",
+    "Apple Dictation",
+    "Samsung Keyboard",
+    "FUTO",
+    "Typeless",
+    "Superwhisper",
+    "ChatGPT",
+    "Other"
+  ],
+  "max_labels": 2,
+  "max_categories": 2,
+  "sentiment_min": 1,
+  "sentiment_max": 5,
+  "mismatch_threshold": 2
+}

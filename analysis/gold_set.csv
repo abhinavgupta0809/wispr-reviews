@@ -1,0 +1,121 @@
+review_id,platform,rating,gold_labels,gold_categories,gold_sentiment
+play_6ea8025f-b0b2-4176-be76-1705bd0a4902,android,1,Generic Bad,,2
+play_750017bf-b224-438a-a819-629b74c0da7d,android,1,Specific Complaint,Reliability & Bugs,2
+play_cbc0c263-c71d-4e42-8d77-1f5b74b10727,android,1,Specific Complaint,Login & Account,2
+play_9a206e55-c97f-4af4-a51b-703d9de39f29,android,1,Generic Bad,,1
+play_2b01e584-e7fc-48a5-9783-2610a760a4b7,android,1,Specific Complaint,Login & Account,1
+play_aec6e249-81ae-40c7-8da5-b43e5cd9b14b,android,1,Specific Complaint,Language Support | Transcription Accuracy,2
+play_d366f2f4-e576-4cbb-95c4-e593144e84c2,android,1,Specific Complaint,Privacy & Security,1
+play_a6c7e4f4-4d30-4be4-b111-f17b0e39ec4a,android,1,Specific Complaint,Reliability & Bugs | Transcription Accuracy,2
+play_5aeb956a-adb0-4f4b-b683-99136a82fd7d,android,1,Specific Complaint,Login & Account,1
+play_f77133c3-6e33-48c3-9ac8-5a7abd5f8858,android,1,Generic Bad,,1
+play_161ef5f0-c8a9-4754-8e3f-6c9ead34ce5e,android,1,Specific Complaint,Free Word Limit | Pricing & Value,1
+play_5df04fa3-81d8-44fc-bc45-9709719bd289,android,1,Specific Complaint,Privacy & Security,1
+play_0363cdb2-0974-46ac-81b3-47e83e348341,android,1,Specific Complaint,Reliability & Bugs,2
+play_16b4bf76-6bca-4ddf-8898-f8985897f498,android,1,Generic Bad,,2
+play_e6cdc91e-aff3-403e-9dda-1a47459df697,android,1,Specific Complaint,Floating Bubble & Overlay | Billing & Subscription,1
+play_9e6ccb35-f4f3-497a-8fba-ffd46a93a2ce,android,1,Specific Complaint,Language Support,2
+play_58335f20-75ae-4b0d-bafd-756b6e8979fc,android,2,Specific Complaint,Reliability & Bugs,2
+play_81afa0e9-ba20-477a-81e7-8155e000e614,android,2,Specific Complaint,Free Word Limit,2
+play_89738830-6465-4c25-90f4-8277ec94e5ea,android,2,Specific Complaint,Transcription Accuracy | Pricing & Value,2
+play_6aa616eb-1692-4158-a86b-534e40b9e2ac,android,2,Specific Complaint,Desktop & Platform Parity | Transcription Accuracy,2
+play_bf227d33-eb22-46a6-9137-53a0d3bf3a9a,android,2,Specific Complaint,Floating Bubble & Overlay | Reliability & Bugs,2
+play_290143e7-8cda-4c92-adde-bc42b1ae15bb,android,2,Specific Complaint,Language Support | Reliability & Bugs,2
+play_58eb107e-efb9-4e9e-bb7a-697bf29ad769,android,2,Specific Complaint,Free Word Limit,2
+play_9a57939f-3b50-47a1-9ae5-d22d90c7ac5c,android,2,Specific Complaint,Desktop & Platform Parity | Reliability & Bugs,2
+play_ddbc4bef-c9ec-4da6-a71f-2a75e1e83387,android,3,Specific Complaint,Floating Bubble & Overlay | Reliability & Bugs,3
+play_c0739ca9-106e-4a77-ab3d-f05cabf94b02,android,3,Specific Complaint,Floating Bubble & Overlay,2
+play_ae4dd558-9c13-42ae-9958-db364bea0ded,android,3,Specific Complaint,Transcription Accuracy,2
+play_18c73528-668a-441c-9633-5233ea888581,android,3,Specific Complaint | Generic Good,Free Word Limit,3
+play_6bab772e-b239-40e9-a780-4e9f7d4403a4,android,3,Specific Complaint,Transcription Accuracy | Speed,2
+play_9e36831f-c1f5-4cfc-9f67-73ae85fbcc46,android,3,Specific Complaint,Transcription Accuracy,3
+play_8ecf4d48-de05-4641-b991-0ecc896321dd,android,3,Feature Request,Notes & History,3
+play_6d6b537d-ffb4-4ea1-9626-614db761564f,android,3,Specific Complaint,AI Editing & Formatting,3
+play_e6aff71a-7b1f-49b4-8fad-9b4b6b31098c,android,4,Specific Praise | Specific Complaint,Productivity & Time Saved | Reliability & Bugs,4
+play_acec9672-884f-482f-92bb-f096240ddeea,android,4,Feature Request | Generic Good,Keyboard & App Switching,4
+play_a14c5e8c-6d7b-4dba-9a3b-be5ff2aa443a,android,4,Feature Request | Generic Good,AI Editing & Formatting | Desktop & Platform Parity,4
+play_518f9a2e-8511-473c-9eec-0385bce9abde,android,4,Specific Complaint,Reliability & Bugs,3
+play_82694c56-7910-4a20-aa0a-28a26965b5c0,android,4,Feature Request,Floating Bubble & Overlay,3
+play_b505ff21-6358-4ed3-93b5-91f2dff6caf4,android,4,Specific Complaint | Generic Good,Reliability & Bugs,4
+play_52245b08-8ed7-4723-9fc8-b07037534e69,android,4,Specific Praise | Specific Complaint,Use Cases | Reliability & Bugs,4
+play_08c1894c-0966-4c02-9301-4080f0da91f4,android,4,Feature Request,Keyboard & App Switching,3
+play_bfcbc5ff-3c46-4ef5-8d64-708cf01f5046,android,4,Specific Complaint | Specific Praise,Floating Bubble & Overlay | Use Cases,4
+play_84be23f5-865a-45b3-8d98-a06a63a528ed,android,5,Specific Praise,Transcription Accuracy,5
+play_e14fd206-880f-4e05-b2a5-9e36cb5457fc,android,5,Specific Praise,Transcription Accuracy | AI Editing & Formatting,5
+play_820f27c4-bc65-4cce-8b5b-7267a1b7d8bf,android,5,Specific Praise,Productivity & Time Saved | Desktop & Platform Parity,5
+play_f9aedcaa-b0e3-43b8-be8c-19243e6e551b,android,5,Specific Praise,AI Editing & Formatting | Transcription Accuracy,5
+play_552839f3-2f1a-4676-9021-cd1b0750f519,android,5,Generic Good,,5
+play_06a0ce4f-bcc8-4bbb-b2a2-cb3293237940,android,5,Generic Good,,5
+play_0a1ec21a-a487-4929-81a5-d7e688f79307,android,5,Generic Good,,5
+play_e7e395df-693c-400d-89f9-288b278997d0,android,5,Specific Complaint | Feature Request,Floating Bubble & Overlay,4
+play_a5a2e8cc-35a4-428b-8a6f-65df7049df86,android,5,Specific Praise | Specific Complaint,Productivity & Time Saved | Reliability & Bugs,5
+play_100c7277-b384-4d28-b5ed-fdeb636146fb,android,5,Generic Good,,5
+play_3313abb4-05bf-4dc7-9724-8c8d7c3cadd1,android,5,Specific Complaint | Generic Good,Reliability & Bugs,4
+play_2dbe4a5f-e469-4314-8595-9b64d261bb16,android,5,Generic Good,,5
+play_e7d5ab80-ad0c-4b45-b425-b06a184bdec2,android,5,Generic Good,,5
+play_a220102b-c858-4218-bfec-980175eda915,android,5,Specific Praise | Specific Complaint,Productivity & Time Saved | Reliability & Bugs,4
+play_3e7bf7c0-438b-48f3-bf35-8824d1fd0de2,android,5,Generic Good,,5
+play_ef6d01b5-7788-423a-a97a-df8c86c4ceaa,android,5,Specific Praise,Transcription Accuracy,5
+play_47bd6a34-077e-4b35-a91d-43cf82a838ce,android,5,Specific Praise,Transcription Accuracy,4
+play_95b34adb-3026-4952-b7bb-b7bd6529be23,android,5,Generic Good,,5
+play_ed1a20cb-2303-4680-b3b2-8131790943d5,android,5,Specific Praise,Productivity & Time Saved,5
+play_cdee9697-6f79-40c0-810f-2776d5cfd17f,android,5,Generic Good,,5
+play_912e8867-466b-4b17-8d19-d4f3306b88a0,android,5,Feature Request | Specific Praise,UI / UX | Desktop & Platform Parity,4
+play_07017843-c858-4286-b46a-65a950d97667,android,5,Specific Praise,Language Support | Transcription Accuracy,5
+play_a56cf2dd-9ca8-49ea-bf3f-98a19e48a6fb,android,5,Specific Praise,Use Cases | Productivity & Time Saved,5
+play_dce75885-ee7a-4f52-b182-c54b4dc83e5b,android,5,Generic Good,,4
+play_edccfa49-0c01-4e4e-b3c9-49c8fb4f822b,android,5,Nonsense,,3
+play_e2ccd56f-90f6-4907-a493-0742e6aefb0e,android,5,Specific Praise,Transcription Accuracy | Speed,5
+play_4925b3b9-2b04-4c98-9bd0-946a1c4eb65d,android,5,Generic Good,,4
+play_6a42c5ee-482c-4da5-84a6-1ca9d55331a4,android,5,Specific Praise,Productivity & Time Saved,5
+play_3c1369d9-8b59-41e5-95f5-8568c59258f8,android,5,Generic Good,,4
+ios_14236437828,ios,1,Specific Complaint,Keyboard & App Switching,1
+ios_14467802802,ios,1,Specific Complaint,Billing & Subscription | Customer Support,2
+ios_13594419978,ios,1,Specific Complaint,Billing & Subscription | UI / UX,1
+ios_14599597620,ios,1,Specific Complaint,Transcription Accuracy,1
+ios_13639247265,ios,1,Specific Complaint,Login & Account,1
+ios_13490791055,ios,1,Specific Complaint,Ads & Marketing,1
+ios_14409104406,ios,1,Specific Complaint,Free Word Limit | Pricing & Value,1
+ios_13504004584,ios,1,Specific Complaint,Privacy & Security,2
+ios_13505820935,ios,1,Specific Complaint,Ads & Marketing,1
+ios_12856043576,ios,2,Specific Complaint,Keyboard & App Switching | Desktop & Platform Parity,2
+ios_14070198902,ios,2,Specific Complaint,Keyboard & App Switching,2
+ios_13541919889,ios,2,Specific Complaint,Transcription Accuracy,2
+ios_13826258683,ios,2,Specific Complaint | Specific Praise,Pricing & Value | Free Word Limit,3
+ios_13509900636,ios,2,Specific Complaint,Reliability & Bugs | Keyboard & App Switching,2
+ios_13582112858,ios,3,Nonsense,,3
+ios_14149890854,ios,3,Specific Complaint,Reliability & Bugs | Billing & Subscription,2
+ios_14140971073,ios,3,Specific Complaint | Specific Praise,Keyboard & App Switching | Transcription Accuracy,3
+ios_13581824954,ios,3,Specific Complaint,Language Support,3
+ios_12795893197,ios,3,Specific Complaint | Specific Praise,Transcription Accuracy | AI Editing & Formatting,3
+ios_14494908564,ios,3,Specific Complaint | Generic Good,UI / UX,3
+ios_13596217257,ios,4,Specific Complaint | Generic Good,Transcription Accuracy,4
+ios_13801429393,ios,4,Feature Request | Specific Praise,Desktop & Platform Parity | Language Support,4
+ios_14459851448,ios,4,Specific Praise,Speed,5
+ios_13178337581,ios,4,Specific Complaint | Specific Praise,Desktop & Platform Parity | AI Editing & Formatting,4
+ios_14490655342,ios,4,Specific Complaint,Pricing & Value,1
+ios_14630931730,ios,4,Generic Good,,4
+ios_13143659229,ios,5,Specific Praise,Productivity & Time Saved | Transcription Accuracy,5
+ios_14181009937,ios,5,Generic Good,,4
+ios_13598205547,ios,5,Generic Good,,4
+ios_13461965953,ios,5,Specific Praise,Desktop & Platform Parity,5
+ios_13832499803,ios,5,Generic Good,,5
+ios_13176767324,ios,5,Specific Praise,Use Cases | AI Editing & Formatting,5
+ios_13685646807,ios,5,Specific Praise,Use Cases,4
+ios_14023934505,ios,5,Generic Good,,4
+ios_14518586928,ios,5,Generic Good,,5
+ios_13897909511,ios,5,Generic Good,,5
+ios_14606684577,ios,5,Generic Good,,5
+ios_13096830337,ios,5,Specific Praise,Transcription Accuracy,5
+ios_14648850789,ios,5,Specific Complaint | Generic Good,Transcription Accuracy,4
+ios_14423451864,ios,5,Specific Praise,UI / UX,5
+ios_13867923613,ios,5,Generic Good,,4
+ios_14163011716,ios,5,Specific Praise,UI / UX,5
+ios_14630117149,ios,5,Specific Praise,Transcription Accuracy,5
+ios_14535843974,ios,5,Specific Praise,Speed | Reliability & Bugs,5
+ios_14329123662,ios,5,Specific Praise,Productivity & Time Saved,5
+ios_14477430254,ios,5,Generic Good,,5
+ios_14558329308,ios,5,Specific Praise,Transcription Accuracy,5
+ios_13750911433,ios,5,Specific Praise,Productivity & Time Saved | Use Cases,5
+ios_14459589091,ios,5,Specific Praise,AI Editing & Formatting | Productivity & Time Saved,5
+ios_12735216046,ios,5,Specific Praise,Productivity & Time Saved | Use Cases,5

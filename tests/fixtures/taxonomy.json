@@ -1,0 +1,56 @@
+{
+  "version": "1",
+  "labels": [
+    "Specific Praise",
+    "Specific Complaint",
+    "Feature Request",
+    "Generic Good",
+    "Generic Bad",
+    "Nonsense"
+  ],
+  "specific_labels": ["Specific Praise", "Specific Complaint", "Feature Request"],
+  "generic_labels": ["Generic Good", "Generic Bad"],
+  "forbidden_label_pairs": [
+    ["Generic Good", "Specific Praise"],
+    ["Generic Bad", "Specific Complaint"],
+    ["Generic Good", "Generic Bad"]
+  ],
+  "categories": [
+    "Answer Accuracy",
+    "Search & Sources",
+    "Answer Style & Filters",
+    "Model Choice",
+    "Credits & Paid Limits",
+    "Free Limits & Paywall",
+    "Pricing & Value",
+    "Billing & Subscription",
+    "Customer Support",
+    "Computer & Agents",
+    "Voice & Dictation",
+    "Images & Files",
+    "Threads & History",
+    "Bugs & Stability",
+    "Speed",
+    "Login & Account",
+    "UI / UX",
+    "Privacy & Permissions",
+    "Use Cases",
+    "Other"
+  ],
+  "competitors": [
+    "ChatGPT",
+    "Gemini",
+    "Claude",
+    "Copilot",
+    "Grok",
+    "DeepSeek",
+    "Meta AI",
+    "Google Search",
+    "Other"
+  ],
+  "max_labels": 2,
+  "max_categories": 2,
+  "sentiment_min": 1,
+  "sentiment_max": 5,
+  "mismatch_threshold": 2
+}

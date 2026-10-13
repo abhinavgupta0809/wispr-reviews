@@ -1,0 +1,18 @@
+[
+  {
+    "reviewId": "fixture-1",
+    "at": "2026-10-07T12:30:00Z",
+    "score": 5,
+    "content": "Helpful answers.\nKeeps my exact spacing!  ☃",
+    "reviewCreatedVersion": "2.1.0",
+    "thumbsUpCount": 3
+  },
+  {
+    "reviewId": "fixture-2",
+    "at": "2026-10-06T13:00:00+01:00",
+    "score": 2,
+    "content": "  Needs improvement  ",
+    "reviewCreatedVersion": null,
+    "thumbsUpCount": 0
+  }
+]

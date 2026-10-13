@@ -1,0 +1,842 @@
+{
+  "version": 1,
+  "about": "Written by Claude from the Oct 12, 2026 annotated corpus of Wispr Flow mobile app reviews. Narrative only. Every number shown on the site comes from running each item's `match` against data/annotated_reviews.csv in build_site_data.py. Tokens in text ({{count}}, {{pct_low_star}}, {{avg_rating}}, {{ios_count}}, {{android_count}}, {{pct_of_substantive}}) are filled from that item's own match. Each improvement, request, and strength carries a `next` line: the check a PM with internal data would run.",
+  "match_spec": {
+    "labels_any": "review has at least one of these labels",
+    "categories_any": "review has at least one of these categories",
+    "categories_all": "review has every one of these categories",
+    "pattern": "case-insensitive regex searched in lowercase title + review_text + english_translation + topic, joined by spaces",
+    "regression_claim": "true = only reviews with regression_claim TRUE",
+    "competitors_any": "review names at least one of these competitors",
+    "combine": "all present fields must hold (AND)"
+  },
+  "evidence_note": "Store reviews are self-selected and skew to people who are delighted or angry. This corpus is the mobile apps only and is small, so several clusters here are in the tens. Treat everything as a signal to investigate, not a validated problem or a market size.",
+  "callouts": [
+    {
+      "id": "c_reliability",
+      "placement": "overview",
+      "title": "\"Great when it works\"",
+      "text": "{{count}} complaints are about dictation that fails, returns nothing, or doesn't paste. {{pct_low_star}} of them come with 1 or 2 stars.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Reliability & Bugs"
+        ]
+      }
+    },
+    {
+      "id": "c_regression",
+      "placement": "overview",
+      "title": "\"It used to be better\"",
+      "text": "{{count}} reviewers say the product got worse than it was.",
+      "match": {
+        "regression_claim": true
+      }
+    },
+    {
+      "id": "c_substantive",
+      "placement": "overview",
+      "title": "Reviews that say something specific",
+      "text": "Everything in Deep Dive and Opportunities rests on these.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Specific Praise",
+          "Feature Request"
+        ]
+      }
+    },
+    {
+      "id": "c_before_use",
+      "placement": "overview",
+      "title": "Stopped before the first dictation",
+      "text": "{{count}} complaints are about sign-in, setup, or the access the app asks for.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Login & Account",
+          "Setup & Permissions",
+          "Privacy & Security"
+        ]
+      }
+    }
+  ],
+  "improvements": [
+    {
+      "id": "i_fails",
+      "type": "fix",
+      "title": "Dictation that fails or returns nothing",
+      "desc": "The largest complaint group. Reviewers speak, sometimes for minutes, and get nothing back: a spinner, a server error, a blank result. \"Great when it works\" is the phrase that keeps coming up. Mostly Android.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Reliability & Bugs"
+        ]
+      },
+      "short": "Dictation fails",
+      "next": "Measure dictation success end to end: of sessions where audio was captured, what share produced text in the target field, split by platform, app version, recording length, and network type. Reviews point at long recordings and weak signal; check whether audio is kept on the device and retried when the upload fails."
+    },
+    {
+      "id": "i_nothing",
+      "type": "fix",
+      "title": "Spoke, and nothing came back",
+      "desc": "The sharpest version of the reliability complaint: the recording is taken, then the transcription fails, hangs on processing, or comes back empty, and the words are lost.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Reliability & Bugs"
+        ],
+        "pattern": "transcription fail|fail\\w* to (transcribe|fetch|process|retrieve)|dictation (fails|returns nothing)|returns nothing|nothing (happens|comes|appears|shows|gets)|blank|no (text|transcri\\w+|output)|keeps? (spinning|loading|processing|rolling)|stuck (on|at|in) (process|load|transcri)|just (spins|loads)|server (error|issue|problem)|network (error|problem)|lost (it all|everything|my|the (whole|entire))|not transcrib|doesn.t transcribe|didn.t transcribe|won.t transcribe"
+      },
+      "short": "Nothing comes back",
+      "next": "Count sessions that end in a failed or empty transcription and how many of those were recovered by a retry. A lost two-minute dictation costs more trust than a slow one, so track words lost, not only error rate."
+    },
+    {
+      "id": "i_paste",
+      "type": "fix",
+      "title": "The text lands on the clipboard, not in the field",
+      "desc": "The dictation works but isn't inserted where the cursor is. Reviewers paste it by hand or go back to the Flow app to copy it. Mostly Android, and often tied to specific apps.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "pattern": "paste|clipboard|not (insert|enter|typ)\\w* (the |into|in)|doesn.t (insert|enter|type)|text (does not|doesn.t|not|never) (appear|show)"
+      },
+      "short": "Text not pasted",
+      "next": "List insertion failures by target app and Android version. If a short list of apps accounts for most of them, that is a compatibility table to fix or to disclose."
+    },
+    {
+      "id": "i_regressed",
+      "type": "fix",
+      "title": "It worked, then it stopped",
+      "desc": "Reliability complaints from people who say it used to work: after an update, after a few days, after reinstalling.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Reliability & Bugs"
+        ],
+        "regression_claim": true
+      },
+      "short": "Broke after working",
+      "next": "Line these reviews up by app version and date against the release log. The Android version chart on the Overview is the place to start; a version with a clear rating drop is the first candidate."
+    },
+    {
+      "id": "i_bubble",
+      "type": "fix",
+      "title": "The Android bubble is the weak point",
+      "desc": "On Android, Flow works through a floating bubble drawn over other apps. Reviewers say it disappears, shows up when they aren't typing, sits on top of things, and leaves a permanent system notice.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Floating Bubble & Overlay"
+        ]
+      },
+      "short": "Bubble problems",
+      "next": "Instrument the bubble itself: how often the overlay or accessibility service is killed or loses its permission, by phone maker and Android version. Reviews name Samsung, Vivo, OnePlus, Poco, and Pixel Fold; battery managers on those phones are the usual cause."
+    },
+    {
+      "id": "i_bubble_gone",
+      "type": "fix",
+      "title": "The bubble disappears and won't come back",
+      "desc": "The single most-repeated Android complaint. The bubble is gone, the app gives no way to bring it back, and people restart, re-grant permissions, or reinstall.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Floating Bubble & Overlay"
+        ],
+        "pattern": "disappear|vanish|goes away|went away|(doesn.t|does not|won.t|no longer|stopp?ed|not) (show|appear|pop)\\w*|(get|bring|come)s? (it )?back"
+      },
+      "short": "Bubble disappears",
+      "next": "Add a health check in the app that says why the bubble is missing (permission revoked, service killed, battery restriction) with a one-tap fix, then watch whether reinstall and re-onboarding rates fall."
+    },
+    {
+      "id": "i_banking",
+      "type": "fix",
+      "title": "Banking apps refuse to open while Flow is on",
+      "desc": "Banking and payment apps detect the overlay or accessibility service, flag Flow as a risk, and refuse to run. Reviewers uninstall Flow to use their bank, and several ask for a per-app exclusion list.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "pattern": "banking|bank apps?|my bank|\\bbank\\b.{0,30}(app|block|refus|detect|warn|flag)|financ\\w* apps?|malware|malicious|payment apps?|\\bupi\\b|gpay|google pay|phonepe|paytm|sensitive apps?"
+      },
+      "short": "Banking apps blocked",
+      "next": "Find out which banking apps block on the overlay, which on the accessibility service, and whether pausing Flow for a listed app is enough. A user-editable exclusion list is the request reviewers make themselves."
+    },
+    {
+      "id": "i_switch",
+      "type": "explore",
+      "title": "On iPhone, starting a dictation takes you out of your app",
+      "desc": "iOS won't let a keyboard use the microphone directly, so Flow opens its own app to start listening and the user swipes back. Reviewers call it the thing that cancels the time saved, and many compare it with the Mac version.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Keyboard & App Switching"
+        ],
+        "pattern": "switch\\w* (to|into|between|back|apps?)|swip\\w*|(open|launch|redirect|bounce|jump|kick|take|send|bring|throw|navigat|go)\\w* (me |you )?(back |out |away |over )?(to|into|from) (the )?(wispr|flow|whisper|app|main app|another app)|leave the app|back and forth"
+      },
+      "short": "iPhone hand-off",
+      "next": "Measure the hand-off: time from tapping the mic to the first word captured, and how many sessions are abandoned in between. Then compare first-week retention of iPhone-only users with users who also have the desktop app."
+    },
+    {
+      "id": "i_keyboard",
+      "type": "explore",
+      "title": "The Flow keyboard is worse to type on",
+      "desc": "Using Flow on iPhone means using its keyboard, and reviewers miss autocorrect, haptics, swipe typing, and local layouts. They switch keyboards back and forth for short edits.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Keyboard & App Switching"
+        ],
+        "pattern": "autocorrect|auto.?correct|spell ?check|haptic|predict\\w*|swipe.?typ|slide.?typ|umlaut|azerty|qwertz|emoji|(keyboard|keys) (is|are|feels?|itself|sucks|stinks|lacks|has no|doesn.t|too)|typing (on|with) (it|the|their|this|wispr|flow)|(normal|regular|default|apple|native|system|standard) keyboard|their (own )?keyboard|capitali[sz]"
+      },
+      "short": "Flow keyboard",
+      "next": "Check how many iPhone users keep Flow as their default keyboard after a week against how many switch to it only to dictate. If most switch, the typing experience is setting a ceiling on dictation use."
+    },
+    {
+      "id": "i_mic_on",
+      "type": "explore",
+      "title": "The microphone indicator stays on",
+      "desc": "A small group, mostly on iPhone, sees the microphone indicator still lit after they finish and reads it as the app listening.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "pattern": "mic\\w* (indicator )?(is |stays? |remains? |still |always |keeps? |left |turns? )+(on|active|listening|recording|open)|always listening|orange dot|keeps? (listening|recording)|still (listening|recording)|listens? (when|even|all)"
+      },
+      "short": "Mic stays on",
+      "next": "Small count, high concern. Confirm how long the session stays open after a dictation and whether the setting that controls it is findable; then say on the screen why the indicator is on."
+    },
+    {
+      "id": "i_ipad",
+      "type": "explore",
+      "title": "iPad is a phone app stretched",
+      "desc": "Reviewers on iPad report a stretched keyboard, no way to trigger Flow with a hardware keyboard attached, and no native iPad app.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "pattern": "\\bipad"
+      },
+      "short": "iPad",
+      "next": "Count active iPad devices and how many have a hardware keyboard. If the share is meaningful, a hardware-key trigger is the smallest fix."
+    },
+    {
+      "id": "i_word_limit",
+      "type": "explore",
+      "title": "The free word limit arrived without warning",
+      "desc": "Reviewers who had used Flow free for months describe being stopped by a weekly word cap they hadn't been told about, some in the middle of a message. Nearly all of these reviews are from September 2026 onward.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Free Word Limit"
+        ]
+      },
+      "short": "Free word limit",
+      "next": "Pull the cohort that was active before the cap: how many hit it in the first two weeks, how many upgraded, how many went quiet. Then test a usage meter and a warning before the cap against the current hard stop."
+    },
+    {
+      "id": "i_limit_surprise",
+      "type": "explore",
+      "title": "\"It was free, then it wasn't\"",
+      "desc": "The subset of limit reviews that call the change sudden, unannounced, or deceptive. The complaint is about how it was introduced more than about paying.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Free Word Limit"
+        ],
+        "pattern": "sudden|no (warning|notice|heads)|without (warning|notice|telling)|out of nowhere|random|never (told|said|mention)|didn.t (tell|say|know|mention)|not (told|mention)|spr(ing|ung)|mid.?(sentence|way)|middle of|surprise|deceptive|decei|bait|trick|mislead|hook|transparen|used to be|was (free|unlimited)|were (free|unlimited)|for months|weeks"
+      },
+      "short": "Limit felt like a switch",
+      "next": "Check what existing free users were shown before the cap took effect on each platform. Reviews say Android users got no notice; if that's right, the fix is communication and a grace period."
+    },
+    {
+      "id": "i_pricing",
+      "type": "explore",
+      "title": "The price is high for how some people use it",
+      "desc": "Reviewers who like the product and say the monthly price is too much for occasional or personal use. Several ask for a cheaper tier, a student price, regional pricing, or a one-time purchase.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Pricing & Value"
+        ]
+      },
+      "short": "Price",
+      "next": "Look at words dictated per week among free users who hit the cap but didn't upgrade. If a large group sits just above the cap, that is the audience for a lower tier."
+    },
+    {
+      "id": "i_login",
+      "type": "fix",
+      "title": "People can't get past sign-in",
+      "desc": "The lowest-rated topic here. Sign-up errors, verification emails that never arrive, Google sign-in loops, sessions that expire, and no way to try the app without an account.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Login & Account"
+        ]
+      },
+      "short": "Sign-in fails",
+      "next": "Pull the sign-in funnel by method and platform: started, completed, failed, and the error. Then decide whether a first dictation can happen before an account exists."
+    },
+    {
+      "id": "i_setup",
+      "type": "fix",
+      "title": "Setup stalls on the permission screens",
+      "desc": "Reviewers grant the accessibility or overlay permission and the app still says it's missing, or the screen has no way forward. Others give up on the number of steps.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Setup & Permissions"
+        ]
+      },
+      "short": "Setup stalls",
+      "next": "Measure onboarding completion by step, phone maker, and Android version. Android's restricted-settings block on sideloaded and newly installed accessibility services is a likely cause of the 'granted but not detected' reports."
+    },
+    {
+      "id": "i_perm_stuck",
+      "type": "fix",
+      "title": "Stuck in onboarding with no way forward",
+      "desc": "The subset of setup reviews that say they could not finish: a permission that doesn't register, a missing Next button, a loop.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Setup & Permissions"
+        ],
+        "pattern": "stuck|can.?t (get|go|proceed|pass|complete|continue|finish|move)|cannot|unable|loop|no (next|continue|button)|doesn.t (register|recogni|detect|work|go|let)|won.t (let|go|accept)|still (says|shows|asks)|keeps? asking|restricted setting|not (register|recogni|detect)"
+      },
+      "short": "Stuck in onboarding",
+      "next": "These users never dictated a word. Find the step with the largest drop and the devices behind it before spending on acquisition."
+    },
+    {
+      "id": "i_privacy",
+      "type": "explore",
+      "title": "Full access and accessibility access stop people at the door",
+      "desc": "Reviewers see a request for full keyboard access or the accessibility service, read it as 'this app can see everything I type', and leave. Some also ask where the audio and text go.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Privacy & Security"
+        ]
+      },
+      "short": "Access worries",
+      "next": "Check the drop-off at the access screen and what it says. Reviewers ask two answerable questions: what the access is used for, and whether audio and text are stored. Test answering both on that screen."
+    },
+    {
+      "id": "i_accuracy",
+      "type": "fix",
+      "title": "Wrong, dropped, or invented words",
+      "desc": "Accuracy is the most-praised thing about Flow, and also a large complaint group: misheard words, sentences dropped, and words nobody said.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Transcription Accuracy"
+        ]
+      },
+      "short": "Wrong words",
+      "next": "Treat these reviews as a seed test set. Group by failure type (misheard, dropped, invented, start clipped) and by language, then score the current model on recordings that reproduce each group."
+    },
+    {
+      "id": "i_first_words",
+      "type": "fix",
+      "title": "The first words get cut off",
+      "desc": "A small, specific group: the first one to several words of a dictation are missing, so people learn to pause before speaking. Almost all on Android.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "pattern": "(miss|cut|drop|skip|los|clip)\\w* (off |out )?(the |my )?(first|beginning|start|initial)|first (few |couple |two |three |one |1 |\\d )?(to \\w+ )?(words?|seconds?|part|sentence)|beginning of (my|the|what)|start of (my|the|what)"
+      },
+      "short": "Start clipped",
+      "next": "Measure the gap between the tap and the moment audio capture starts, by device. A fixed start-up delay would explain every one of these."
+    },
+    {
+      "id": "i_added_words",
+      "type": "fix",
+      "title": "Words appear that nobody said",
+      "desc": "Reviewers report names, phrases, or whole sentences in the output that they did not say, often at the start of a dictation or in a non-English language.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "pattern": "(add|insert|invent|hallucinat|mak\\w* up|made up)\\w* (random |extra |its own |some )?(words?|text|sentences?|things|stuff|names?)|words? (i|that i) (did not|didn.t|never) sa(y|id)|didn.t say|did not say|random words|thank you for watching|subtitles"
+      },
+      "short": "Invented words",
+      "next": "This is a known speech-model failure on silence and low-volume audio. Sample short and quiet recordings and count outputs with words that aren't in the audio."
+    },
+    {
+      "id": "i_overedit",
+      "type": "explore",
+      "title": "Some people want their exact words",
+      "desc": "Most reviewers like the clean-up. A smaller group says it changes their meaning or their phrasing and asks for a verbatim mode.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "AI Editing & Formatting"
+        ],
+        "pattern": "verbatim|chang\\w*|rewrit|rephras|reword|word for word|exactly what|my words|too (aggressive|much)|paraphras|alter|own words|meaning"
+      },
+      "short": "Too much editing",
+      "next": "Check how many users change the style or editing settings, and whether those settings exist on mobile at all. If few find them, a visible 'exactly what I said' switch is the test."
+    },
+    {
+      "id": "i_language",
+      "type": "explore",
+      "title": "Outside English the quality is uneven",
+      "desc": "Complaints and requests about languages other than English: lower accuracy, the wrong language or script in the output, and an app and keyboard that are English only.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Language Support"
+        ]
+      },
+      "short": "Other languages",
+      "next": "Break accuracy and retention out by dictation language. Reviews name Hindi and Hinglish, German, Arabic, Russian, and Swedish; compare them with English on the same measure before choosing where to invest."
+    },
+    {
+      "id": "i_wrong_lang",
+      "type": "fix",
+      "title": "It answers in the wrong language or script",
+      "desc": "Reviewers speak one language and get another: English when they spoke something else, Latin letters for a Cyrillic or Indic language, or a translation they didn't ask for.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Language Support"
+        ],
+        "pattern": "wrong (language|script)|(switch|chang|revert|default)\\w* (back )?(to|into) (english|another|a different|the wrong)|translat\\w*|instead of|mix(es|ed|ing)? (up )?(the )?(languages?|scripts?|\\w+ and \\w+)|latin (letters|characters|script)|cyrillic|(in|into|to) english (instead|even|when|although)|romani[sz]|hinglish|(auto.?)?detect"
+      },
+      "short": "Wrong language out",
+      "next": "Count sessions where the detected language differs from the user's selected languages. A per-user language lock is the fix reviewers describe."
+    },
+    {
+      "id": "i_parity",
+      "type": "explore",
+      "title": "Mobile trails the desktop app",
+      "desc": "Reviewers who use Flow on Mac or Windows and find the phone version behind it: less reliable, missing features such as polish, and clumsier to start.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint",
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Desktop & Platform Parity"
+        ],
+        "pattern": "(mac|macbook|windows|desktop|laptop|pc|computer)\\b"
+      },
+      "short": "Mobile behind desktop",
+      "next": "Among users with both desktop and mobile, compare dictations per active day on each. A large gap says the phone is the weak leg of a multi-device subscription."
+    },
+    {
+      "id": "i_battery",
+      "type": "fix",
+      "title": "Battery drain and a slower phone",
+      "desc": "Reviewers report battery drain, heat, and system lag while Flow is installed, and say it stops when they remove it.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Battery & Performance"
+        ]
+      },
+      "short": "Battery and heat",
+      "next": "Check the background service's wake time and battery share from Android vitals by device. Aggressive battery managers killing the service would also link this to the vanishing bubble."
+    },
+    {
+      "id": "i_billing",
+      "type": "fix",
+      "title": "Paid, and still asked to pay",
+      "desc": "Small but among the lowest-rated: a Pro purchase or trial that didn't unlock, renewals that failed, cancelling that needs an email, and support replies that didn't resolve it.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Billing & Subscription",
+          "Customer Support"
+        ]
+      },
+      "short": "Billing and support",
+      "next": "Count purchases where the entitlement didn't apply within the hour, by store and country, and how long those tickets took to reach a person."
+    },
+    {
+      "id": "i_ads",
+      "type": "explore",
+      "title": "The ads reach people who don't want the app",
+      "desc": "Reviews from people who are tired of seeing Flow's ads, and from people who tried it because of an ad and say it didn't match.",
+      "match": {
+        "labels_any": [
+          "Specific Complaint"
+        ],
+        "categories_any": [
+          "Ads & Marketing"
+        ]
+      },
+      "short": "Ads",
+      "next": "These are mostly non-users rating the ad, not the product. Check frequency caps, and whether ad-driven installs complete setup at a lower rate than organic ones."
+    }
+  ],
+  "feature_requests": [
+    {
+      "id": "f_keyboard",
+      "title": "A better way to start on the phone",
+      "desc": "A real keyboard on Android in place of the bubble, a mic button inside the usual keyboard, and fewer steps on iPhone.",
+      "match": {
+        "labels_any": [
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Keyboard & App Switching",
+          "Floating Bubble & Overlay"
+        ]
+      },
+      "next": "The request behind most of these is 'let me start from the keyboard I already use'. Size it by counting how many users dictate from more than one entry point."
+    },
+    {
+      "id": "f_parity",
+      "title": "Desktop features, and more devices",
+      "desc": "Polish and other desktop features on mobile, a native iPad app, and versions for Linux, Chromebook, and watch.",
+      "match": {
+        "labels_any": [
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Desktop & Platform Parity"
+        ]
+      },
+      "next": "Rank by how many paying users already own the device. iPad and feature parity come from existing customers; Linux and watch are new reach."
+    },
+    {
+      "id": "f_language",
+      "title": "More languages, and control over them",
+      "desc": "Support for specific languages and dialects, locking the output language, and the app and keyboard in the reviewer's language.",
+      "match": {
+        "labels_any": [
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Language Support"
+        ]
+      },
+      "next": "Tally requested languages against where installs are growing. A request from a market that is already large is worth more than the count suggests."
+    },
+    {
+      "id": "f_ui",
+      "title": "See the words, dark mode, hands-free",
+      "desc": "Showing the text while speaking, dark mode, starting without holding a button, and pausing media while dictating.",
+      "match": {
+        "labels_any": [
+          "Feature Request"
+        ],
+        "categories_any": [
+          "UI / UX"
+        ]
+      },
+      "next": "Live text is the request with a product argument behind it: reviewers want to know it's working before they finish. That ties it to the reliability complaints."
+    },
+    {
+      "id": "f_editing",
+      "title": "More control over the clean-up",
+      "desc": "A verbatim mode, tone and style choices on mobile, custom punctuation rules, and turning auto-capitalisation off.",
+      "match": {
+        "labels_any": [
+          "Feature Request"
+        ],
+        "categories_any": [
+          "AI Editing & Formatting"
+        ]
+      },
+      "next": "Check which of these already exist on desktop. Those are parity work, not new features."
+    },
+    {
+      "id": "f_pricing",
+      "title": "A cheaper way to pay",
+      "desc": "A lower tier, student and regional pricing, a one-time purchase, or a larger free allowance.",
+      "match": {
+        "labels_any": [
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Pricing & Value",
+          "Free Word Limit"
+        ]
+      },
+      "next": "Compare with what free users dictate per week. A request for a cheaper tier from someone using 2,000 words a week is a different customer from one using 20,000."
+    },
+    {
+      "id": "f_history",
+      "title": "Delete and manage history",
+      "desc": "Deleting dictation history in bulk, and better notes on mobile.",
+      "match": {
+        "labels_any": [
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Notes & History"
+        ]
+      },
+      "next": "Bulk delete is small to build and speaks directly to the privacy worry. Check how many users delete transcripts one at a time today."
+    },
+    {
+      "id": "f_accuracy",
+      "title": "Custom words and offline use",
+      "desc": "A shared dictionary across devices, better handling of names and jargon, and dictation without a connection.",
+      "match": {
+        "labels_any": [
+          "Feature Request"
+        ],
+        "categories_any": [
+          "Transcription Accuracy",
+          "Reliability & Bugs"
+        ]
+      },
+      "next": "Offline requests overlap with the 'fails on weak signal' complaints. Count how many failed dictations happen on poor connections before weighing an on-device model."
+    }
+  ],
+  "strengths": [
+    {
+      "id": "s_accuracy",
+      "title": "Accuracy is the reason people stay",
+      "desc": "Praise for getting the words right: accents, fast speech, quiet speech, noisy rooms.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "categories_any": [
+          "Transcription Accuracy"
+        ]
+      },
+      "next": "Protect it. Keep an accuracy test set by accent and noise level in every model release, and watch the reviews that say accuracy slipped."
+    },
+    {
+      "id": "s_time",
+      "title": "It saves time, and people say how much",
+      "desc": "Faster than typing, more done in a day, 'I don't type anymore'.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "categories_any": [
+          "Productivity & Time Saved"
+        ]
+      },
+      "next": "This is the retention story in the users' own words. The time-saved claim is strongest where dictation reliably works, so pair it with the reliability numbers."
+    },
+    {
+      "id": "s_vs_native",
+      "title": "Better than the phone's own dictation",
+      "desc": "Praise that compares Flow with Google voice typing, Apple dictation, or Samsung's keyboard and says Flow wins.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "competitors_any": [
+          "Google Voice Typing",
+          "Apple Dictation",
+          "Samsung Keyboard"
+        ]
+      },
+      "next": "The built-in option is the real competitor and it's free. Keep a side-by-side accuracy benchmark against both and use it in onboarding."
+    },
+    {
+      "id": "s_editing",
+      "title": "The clean-up is the difference",
+      "desc": "Praise for punctuation, removed filler words, self-corrections handled, and text that reads as written.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "categories_any": [
+          "AI Editing & Formatting"
+        ]
+      },
+      "next": "This is what built-in dictation doesn't do. Check that it works as well on mobile as on desktop, since some reviewers say it doesn't."
+    },
+    {
+      "id": "s_language",
+      "title": "Multilingual use works for many",
+      "desc": "Praise for dictating in a language other than English, and for switching languages mid-sentence.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "categories_any": [
+          "Language Support"
+        ]
+      },
+      "next": "The same category holds a large complaint group. Split praise and complaints by language to see which ones are solid."
+    },
+    {
+      "id": "s_use",
+      "title": "Email, messages, and notes",
+      "desc": "What people use it for: replying to email and messages, notes, writing.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "categories_any": [
+          "Use Cases"
+        ]
+      },
+      "next": "Use these to pick the apps where insertion has to work every time."
+    },
+    {
+      "id": "s_ai",
+      "title": "Talking to AI tools",
+      "desc": "Reviewers who dictate prompts to ChatGPT, Claude, Cursor, and coding tools.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "pattern": "prompt|claude|chatgpt|cursor|vibe.?cod|\\bcod(e|ing)\\b|\\bllm|\\bai (tools?|agents?|chat)|gemini|copilot"
+      },
+      "next": "A distinct, heavy-use audience. Check their words per week and retention against everyone else."
+    },
+    {
+      "id": "s_health",
+      "title": "It helps people who find typing hard",
+      "desc": "Praise from reviewers with dyslexia, ADHD, arthritis, injuries, tremor, or low vision.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "pattern": "dyslexi|adhd|arthrit|disab|carpal|injur|tremor|stroke|parkinson|\\brsi\\b|blind|vision|autis|chronic|pain|elderly|senior|hands? (shake|hurt)|neurodiv|typing is (hard|difficult|slow)"
+      },
+      "next": "A group that benefits most and tolerates failure least. Their reviews are worth reading before changing the free allowance."
+    },
+    {
+      "id": "s_devices",
+      "title": "One tool across phone and computer",
+      "desc": "Praise for using Flow on every device.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "categories_any": [
+          "Desktop & Platform Parity"
+        ]
+      },
+      "next": "Multi-device users are likely the best retained. Confirm it, then make the second device the first-week goal."
+    },
+    {
+      "id": "s_ease",
+      "title": "Easy to use, and fast",
+      "desc": "Praise for simplicity and quick results.",
+      "match": {
+        "labels_any": [
+          "Specific Praise"
+        ],
+        "categories_any": [
+          "UI / UX",
+          "Speed"
+        ]
+      },
+      "next": "Compare with the setup complaints: the people who get through onboarding call it easy."
+    }
+  ],
+  "label_takeaways": {
+    "Generic Good": [
+      "Short approval with nothing specific: 'great app', 'game changer', 'love it'.",
+      "It lifts the star average and says nothing about why. Leave it out of any qualitative read."
+    ],
+    "Specific Praise": [
+      "The largest group. Accuracy leads, then time saved, then the clean-up of punctuation and filler words.",
+      "Many compare it with the phone's own dictation and say Flow is clearly better.",
+      "A good share was dictated with Flow, and says so."
+    ],
+    "Specific Complaint": [
+      "Reliability leads: dictation that fails, returns nothing, or doesn't paste. Then accuracy, then the Android bubble and the iPhone hand-off.",
+      "The free word limit is small in count and almost all from September 2026 onward.",
+      "Sign-in, setup, and access complaints come from people who never got to dictate, and they rate lowest."
+    ],
+    "Feature Request": [
+      "Friendlier than the complaints: most rate the app 4 or 5 stars.",
+      "The common thread is starting dictation from the usual keyboard, then desktop features on mobile and more languages."
+    ],
+    "Generic Bad": [
+      "Short dismissals with nothing to act on. A good share say the phone already does this."
+    ],
+    "Nonsense": [
+      "Off-topic text, test strings, and reviews of the idea of dictation, not the app. Excluded from sentiment reads."
+    ]
+  },
+  "category_notes": {
+    "Transcription Accuracy": "The category with the most reviews. Mostly praise, with a real complaint group: misheard, dropped, and invented words.",
+    "AI Editing & Formatting": "Nearly all praise for punctuation and filler-word removal. The complaints want exact words or more control.",
+    "Language Support": "Split almost evenly. Praise for multilingual and mixed-language dictation; complaints about accuracy, the wrong language coming out, and an English-only app.",
+    "Free Word Limit": "Small, low-rated, and recent: nearly all from September 2026 onward, from people who had used it free.",
+    "Pricing & Value": "Mostly 'too expensive for how I use it', and it jumped the same month the word limit appeared. Some praise for value.",
+    "Billing & Subscription": "Purchases and trials that didn't unlock, failed renewals, and cancelling by email. Small and among the lowest-rated.",
+    "Customer Support": "Mixed: complaints about automated replies, and praise for fast fixes. Usually the second issue in a review.",
+    "Login & Account": "The lowest-rated category. Sign-up errors, sign-in loops, and no way to try the app without an account.",
+    "Setup & Permissions": "Permission screens that don't register the grant, and onboarding that can't be finished. Mostly Android.",
+    "Floating Bubble & Overlay": "Android only. The bubble disappears, gets in the way, and banking apps refuse to open while it's on.",
+    "Keyboard & App Switching": "Mostly iPhone. Being sent into the Flow app to start, and a keyboard reviewers find worse to type on.",
+    "Reliability & Bugs": "The largest complaint category: dictation that fails, hangs, returns nothing, or doesn't paste. 'Great when it works.'",
+    "Speed": "Mostly praise for fast results. The complaints are about long processing waits.",
+    "Battery & Performance": "Battery drain, heat, and a slower phone. Small and mostly Android.",
+    "Privacy & Security": "Full keyboard access and accessibility access read as 'it can see everything'. Many of these reviewers left before trying it.",
+    "Ads & Marketing": "People tired of the ads, and people who say the product didn't match them. Often not users.",
+    "Desktop & Platform Parity": "Praise for one tool on every device; complaints that the phone version trails the Mac and Windows apps.",
+    "Notes & History": "Small. Requests to delete history in bulk, and mixed views on notes.",
+    "UI / UX": "Mostly praise for ease of use. Requests for dark mode, live text while speaking, and hands-free start.",
+    "Productivity & Time Saved": "Almost entirely praise, and the highest-rated category: faster than typing, more done in a day.",
+    "Use Cases": "What people use it for: email, messages, AI prompts, notes, and getting around a condition that makes typing hard.",
+    "Other": "Specific reviews that fit nowhere else."
+  }
+}
