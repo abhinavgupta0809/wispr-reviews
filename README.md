@@ -4,6 +4,7 @@ An independent, unofficial dashboard of public Google Play and App Store reviews
 mobile apps: 7,007 reviews from May 23, 2025 to Oct 11, 2026, each labeled by an LLM and browsable.
 Run 4 of a series (Perplexity, Indeed, Claude, Wispr Flow). Not affiliated with Wispr.
 
+- Live: https://wispr-reviews-site.vercel.app/
 - Site: `site/` (static HTML, CSS, JavaScript; no build step)
 - Findings: `analysis/insights.json`; taxonomy: `docs/TAXONOMY.md`; prompt: `docs/annotation_prompt.md`
 - Label check against 120 hand-labeled reviews: `docs/handover/02-eval.md` (94.17% first label, 90.22% first category)
