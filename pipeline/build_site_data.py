@@ -211,6 +211,118 @@ def gold_figures(path):
         raise ScrapeError('Cannot parse gold agreement figures from evaluation report') from None
 
 
+# Cross-cuts behind the Overview insight cards: pairings a reader cannot get from one chart (helpful votes against
+# complaint counts, one category against another, a spike against a release, one platform against the other).
+# Patterns and thresholds live here so the site never types a number.
+PAY_RE = re.compile(r'\bpay|paid|subscri|premium|\$|money|refund|cancel|trial')
+OLD_RE = re.compile(r'used to|old version|bring back|went downhill|got worse|since the (last )?update|after (the )?update|downgrade')
+
+
+def facts(subset, weeks, taxonomy):
+    text = lambda r: f"{r.get('title') or ''} {r.get('review_text') or ''} {r.get('english_translation') or ''}".lower()
+    votes_of = lambda r: int(r.get('thumbs_up') or 0)
+    complaint, praise = taxonomy['specific_labels'][1], taxonomy['specific_labels'][0]
+    substantive = [r for r in subset if r['categories']]
+    n_sub = len(substantive) or 1
+    mentions = Counter(c for r in substantive for c in r['categories'])
+    out = {'n_substantive': len(substantive)}
+    # Helpful votes (Google Play only) against mention share, per category.
+    votes = Counter()
+    for r in substantive:
+        for c in r['categories']:
+            votes[c] += votes_of(r)
+    if sum(votes.values()) >= 500:
+        total_m, total_v = sum(mentions.values()), sum(votes.values())
+        out['votes'] = {'total': total_v, 'by': {c: {'count_pct': mentions[c] / total_m * 100, 'vote_pct': votes[c] / total_v * 100, 'ratio': (votes[c] / total_v) / (mentions[c] / total_m)} for c in mentions if mentions[c] >= 50}}
+    # Which platform each category skews to, against the platform mix of all substantive reviews.
+    ios_base = sum(r['platform'] == 'ios' for r in substantive) / n_sub * 100
+    if 0 < ios_base < 100:
+        out['skew'] = {'ios_base_pct': ios_base, 'by': {c: {'ios_pct': sum(r['platform'] == 'ios' for r in substantive if c in r['categories']) / mentions[c] * 100, 'count': mentions[c]} for c in mentions if mentions[c] >= 50}}
+    # Complaints that still give five stars, per category.
+    comps = [r for r in substantive if r['labels'][0] == complaint]
+    if comps:
+        base = sum(r['rating'] == 5 for r in comps) / len(comps) * 100
+        by = {}
+        for c in mentions:
+            g = [r for r in comps if c in r['categories']]
+            if len(g) >= 40:
+                by[c] = {'count': len(g), 'five_pct': sum(r['rating'] == 5 for r in g) / len(g) * 100}
+        out['five_star'] = {'base_pct': base, 'by': by}
+    # Categories that travel together: lift = observed pairs / expected if independent.
+    pairs = Counter()
+    for r in substantive:
+        cs = sorted(set(r['categories']))
+        for i in range(len(cs)):
+            for j in range(i + 1, len(cs)):
+                pairs[(cs[i], cs[j])] += 1
+    lifts = []
+    for (a, b), n in pairs.items():
+        if n >= 20:
+            g = [r for r in substantive if a in r['categories'] and b in r['categories']]
+            lifts.append({'a': a, 'b': b, 'count': n, 'lift': n * len(substantive) / (mentions[a] * mentions[b]), 'avg_rating': mean([r['rating'] for r in g]), 'ios_pct': sum(r['platform'] == 'ios' for r in g) / n * 100})
+    out['pairs'] = sorted(lifts, key=lambda x: -x['lift'])[:15]
+    # Developer replies on Google Play: who gets answered.
+    android = [r for r in subset if r['platform'] == 'android']
+    replied = lambda r: str(r.get('has_dev_reply')).upper() in ('TRUE', '1')
+    if sum(replied(r) for r in android) >= 50:
+        by_label = {label: {'count': sum(r['labels'][0] == label for r in android), 'rate': percent(sum(replied(r) for r in android if r['labels'][0] == label), sum(r['labels'][0] == label for r in android))} for label in taxonomy['labels']}
+        by_cat = {}
+        for c in mentions:
+            g = [r for r in android if c in r['categories'] and r['labels'][0] == complaint]
+            if len(g) >= 30:
+                by_cat[c] = {'count': len(g), 'rate': percent(sum(replied(r) for r in g), len(g))}
+        out['replies'] = {'total': sum(replied(r) for r in android), 'by_label': by_label, 'by_category': by_cat}
+    # The biggest week for each category against the weeks before it, with the releases it landed on.
+    spikes = []
+    for c in mentions:
+        if mentions[c] < 80:
+            continue
+        weekly = []
+        for start in weeks:
+            end = (dt(start + 'T00:00:00Z') + timedelta(days=7)).date().isoformat()
+            weekly.append((start, [r for r in substantive if c in r['categories'] and start <= r['date_utc'] < end]))
+        if len(weekly) < 6:
+            continue
+        start, group = max(weekly, key=lambda w: len(w[1]))
+        before = [len(g) for s, g in weekly if s < start]
+        if not before or len(group) < 25:
+            continue
+        ratio = len(group) / (mean(before) or 1)
+        if ratio >= 2.5:
+            versions = Counter((r['platform'], r['app_version']) for r in group if r['app_version']).most_common(2)
+            week_all = [r for r in substantive if start <= r['date_utc'] < (dt(start + 'T00:00:00Z') + timedelta(days=7)).date().isoformat()]
+            before_all = [r for r in substantive if r['date_utc'] < start and r['date_utc'] >= weeks[0]]
+            spikes.append({'category': c, 'week': start, 'count': len(group), 'before_mean': mean(before), 'ratio': ratio,
+                           'complaint_pct': percent(sum(r['labels'][0] == complaint for r in group), len(group)),
+                           'week_n': len(week_all), 'week_avg_rating': mean([r['rating'] for r in week_all]),
+                           'before_week_avg_rating': mean([r['rating'] for r in before_all]) if before_all else None,
+                           'before_avg_rating': mean([r['rating'] for s, g in weekly if s < start for r in g]) if any(g for s, g in weekly if s < start) else None,
+                           'versions': [{'platform': p, 'version': v, 'count': n} for (p, v), n in versions],
+                           'top_topic': (Counter(r['topic'] for r in group if r['topic']).most_common(1) or [('', 0)])[0]})
+    out['spikes'] = sorted(spikes, key=lambda x: -x['ratio'])
+    # Stars by month and platform, so a platform average can be read as a history.
+    months = sorted({r['date_utc'][:7] for r in subset})
+    out['monthly'] = [{'month': m, **{p: {'n': len(g), 'avg_rating': mean([r['rating'] for r in g])} for p in ('android', 'ios') for g in [[r for r in subset if r['date_utc'][:7] == m and r['platform'] == p]] if g}} for m in months]
+    # Competitors: where each rival is named more than its share.
+    base_total = sum(mentions.values()) or 1
+    comps_out = {}
+    for name in taxonomy.get('competitors', []):
+        named = [r for r in subset if name in r['competitors']]
+        if len(named) < 20:
+            continue
+        cats = Counter(c for r in named for c in r['categories'])
+        total = sum(cats.values()) or 1
+        over = sorted([(c, n, (n / total) / (mentions[c] / base_total)) for c, n in cats.items() if n >= 8 and mentions[c]], key=lambda x: -x[2])
+        comps_out[name] = {'count': len(named), 'avg_rating': mean([r['rating'] for r in named]), 'praise': sum(r['labels'][0] == praise for r in named), 'complaints': sum(r['labels'][0] == complaint for r in named), 'over': over[:3]}
+    out['competitors'] = comps_out
+    # Reviews that mention paying, and reviews that say it got worse.
+    pay = [r for r in subset if PAY_RE.search(text(r))]
+    old = [r for r in subset if OLD_RE.search(text(r))]
+    out['pay'] = {'count': len(pay), 'avg_rating': mean([r['rating'] for r in pay]), 'cats': Counter(c for r in pay for c in r['categories']).most_common(5)}
+    out['old'] = {'count': len(old), 'avg_rating': mean([r['rating'] for r in old]), 'cats': Counter(c for r in old for c in r['categories']).most_common(5)}
+    return out
+
+
 def scope_summary(rows, daily, scope, weeks, taxonomy):
     subset = [r for r in rows if scope == 'all' or r['platform'] == scope]
     substantive = sum(bool(r['categories']) for r in subset)
@@ -265,7 +377,7 @@ def scope_summary(rows, daily, scope, weeks, taxonomy):
                         for v in range(taxonomy['sentiment_min'], taxonomy['sentiment_max'] + 1)],
             'versions': [{'name': v, 'count': len(group), 'avg_rating': mean([r['rating'] for r in group])} for v, group in sorted(versions.items(), key=lambda x: version_key(x[0])) if len(group) >= 100],
             'competitors': [{'name': name, **statistics([r for r in subset if name in r['competitors']], substantive, taxonomy)} for name in taxonomy['competitors']],
-            'languages': language_rows, 'pain': pain}
+            'languages': language_rows, 'pain': pain, 'facts': facts(subset, weeks, taxonomy)}
 
 
 def build(args):

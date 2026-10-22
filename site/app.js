@@ -111,94 +111,117 @@ const insightCount = id => { for (const group of ['improvements', 'feature_reque
 const opportunityJump = (id, text) => ({text, onClick: () => { state.jump = id; navigate('opportunities'); }, href: `#opportunities?${new URLSearchParams({platform: state.platform})}`});
 const deepJump = (mode, group, text, platform = state.platform) => ({text, href: `#deep-dive?${new URLSearchParams({platform, mode, group}).toString().replaceAll('+', '%20')}`});
 function takeawayPoints(data, weeks, categories) {
-  const s = data.stats, L = data.labels, r2 = value => nf(value, ui.rating_digits), points = [];
-  const [praiseLabel, complaintLabel, requestLabel] = ['Specific Praise', 'Specific Complaint', 'Feature Request'];
-  const cat = name => categories.find(c => c.name === name), complaints = c => c.by_label[complaintLabel];
-  const scopeNote = state.platform === 'all' ? '' : `${platformName(state.platform)} `;
-  const stars = weeks.map(w => w.avg_rating), weekLow = Math.min(...stars), weekHigh = Math.max(...stars), weekSwing = weekHigh - weekLow;
-  const complaintRank = entry => [...categories].sort((a, b) => complaints(b) - complaints(a)).findIndex(c => c.name === entry.name) + ui.one;
-  const rankText = rank => rank === ui.one ? 'the most of any topic' : `the #${rank} complaint topic`;
+  // Findings + findings = insight = hypothesis. Each card holds two or three findings from different cuts of the reviews
+  // (helpful votes, co-occurrence, platform, time, competitors), the tension they add up to for the user and for the
+  // company, and the idea that tension suggests, as a test. Every figure comes from summary.json for the current scope.
+  const s = data.stats, F = data.facts || {}, r1 = value => nf(value, 1), r2 = value => nf(value, ui.rating_digits), points = [];
+  const [praiseLabel, complaintLabel] = ['Specific Praise', 'Specific Complaint'];
+  const cat = name => categories.find(c => c.name === name), complaints = c => c?.by_label[complaintLabel] ?? ui.zero, praise = c => c?.by_label[praiseLabel] ?? ui.zero;
+  const scopeNote = state.platform === 'all' ? '' : `${platformName(state.platform)} `, ok = c => c && !isSmall(c), x = value => `${r1(value)}x`, REV = 'Reviews';
+  const pair = (a, b) => (F.pairs || []).find(q => (q.a === a && q.b === b) || (q.a === b && q.b === a));
+  const V = F.votes?.by, votesFor = name => V?.[name] ? x(V[name].ratio) : null, skew = name => F.skew?.by?.[name], five = name => F.five_star?.by?.[name], comp = name => F.competitors?.[name];
+  const all = state.platform === 'all', ratePct = v => nf(Math.round(v));
 
-  const weekName = i => new Date(weeks.at(i).week).toLocaleDateString('en-US', {month: 'short', day: 'numeric', timeZone: 'UTC'});
-  const recentWeeks = 6, lastN = series => (series || []).slice(-recentWeeks).reduce((sum, v) => sum + v, ui.zero), allN = series => (series || []).reduce((sum, v) => sum + v, ui.zero);
-  const sc = L[complaintLabel].count;
+  const monthName = m => new Date(`${m}-15T00:00:00Z`).toLocaleDateString('en-US', {month: 'short', year: 'numeric', timeZone: 'UTC'});
+  const spikeFor = name => (F.spikes || []).find(q => q.category === name);
+  const accuracy = cat('Transcription Accuracy'), prod = cat('Productivity & Time Saved');
 
-  // 1. Reliability, against the accuracy people praise.
-  const bugs = cat('Reliability & Bugs'), accuracy = cat('Transcription Accuracy');
-  if (bugs && !isSmall(bugs)) { const nothing = insightCount('i_nothing'), paste = insightCount('i_paste');
-    points.push({chart: 'about', see: 'What reviews are about', title: complaintRank(bugs) === ui.one ? '"Great when it works": reliability is the top complaint' : 'Reliability is a leading complaint',
-      evidence: `${nf(complaints(bugs))} ${scopeNote}complaints are about dictation that fails, hangs, or does not paste, ${rankText(complaintRank(bugs))} (${r2(bugs.avg_rating)} stars).${accuracy ? ` Reviewers praise what it does when it works: ${nf(accuracy.by_label[praiseLabel])} reviews praise accuracy.` : ''}${nothing ? ` ${nf(nothing)} describe speaking and getting nothing back` : ''}${nothing && paste ? `; ${nf(paste)} say the text was not inserted where they were typing.` : nothing ? '.' : ''}`,
-      action: 'Make dictation success the health number: of sessions where audio was captured, the share that put text in the target field, split by platform, app version, recording length, and network type. Count words lost, not only errors, since a lost two-minute dictation costs more trust than a slow one. Then check whether audio is kept on the device and retried when the upload fails.',
-      more: opportunityJump('i_fails', 'See the reliability opportunities')}); }
-
-  // 2. The free word limit: small, recent, and tied to price.
-  const limit = cat('Free Word Limit'), price = cat('Pricing & Value');
-  if (limit && !isSmall(limit)) { const wc = limit.weekly_complaints, recent = lastN(wc), total = allN(wc), surprise = insightCount('i_limit_surprise'), priceRecent = price ? lastN(price.weekly_complaints) : ui.zero, priceTotal = price ? allN(price.weekly_complaints) : ui.zero, isRecent = total && recent / total > 0.6;
-    points.push({chart: 'satisfaction', see: 'Satisfaction by category', title: isRecent ? 'The free word limit is a new complaint, and it arrived all at once' : 'The free word limit draws a small, low-rated group',
-      evidence: `${nf(complaints(limit))} ${scopeNote}complaints are about the cap on free dictation (${r2(limit.avg_rating)} stars).${total ? ` ${nf(recent)} of the ${nf(total)} in complete weeks came in the last ${recentWeeks} weeks, since the week of ${weekName(-recentWeeks)}.` : ''}${priceTotal ? ` Price complaints moved with it: ${nf(priceRecent)} of ${nf(priceTotal)} in the same ${recentWeeks} weeks.` : ''}${surprise ? ` ${nf(surprise)} call the change sudden or unannounced.` : ''}`,
-      action: 'Pull the cohort that was active before the cap: how many hit it in the first two weeks, how many upgraded, and how many went quiet. Check what existing free users were shown before it took effect on each platform. Then test a usage meter and a warning before the cap against the current hard stop; reviewers object to the surprise more than to paying.',
+  // 1. A cap on something that was unlimited is read as a loss.
+  const limit = cat('Free Word Limit'), price = cat('Pricing & Value'), lp = pair('Free Word Limit', 'Pricing & Value'), sp = spikeFor('Free Word Limit');
+  if (ok(limit) && sp) { const weekAvg = sp.week_avg_rating, priorAvg = sp.before_week_avg_rating;
+    const priceSpike = (F.spikes || []).find(q => q.category === 'Pricing & Value' && q.week === sp.week), surprise = insightCount('i_limit_surprise'), v = sp.versions[ui.zero];
+    points.push({chart: 'satisfaction', see: 'Satisfaction by category', title: 'A cap on something that was unlimited is read as a loss, not a price',
+      findings: [{source: REV, text: `${nf(sp.count)} ${scopeNote}reviews about the free word limit in the week of ${dateText(sp.week)}, against ${r1(sp.before_mean)} a week before it${v ? `, mostly on ${platformName(v.platform)} ${v.version}` : ''}${priceSpike ? `. Price complaints went from ${r1(priceSpike.before_mean)} a week to ${nf(priceSpike.count)}` : ''}.${weekAvg && priorAvg ? ` Substantive reviews that week averaged ${r2(weekAvg)} stars against ${r2(priorAvg)} in the weeks before.` : ''}`},
+        ...(lp ? [{source: REV, text: `${nf(lp.count)} reviews pair the limit with price, ${x(lp.lift)} what chance would give (${r2(lp.avg_rating)} stars)${surprise ? `; ${nf(surprise)} say it arrived without warning` : ''}.`}] : []),
+        ...(ok(accuracy) ? [{source: REV, text: `Accuracy praise did not move: ${nf(praise(accuracy))} ${scopeNote}reviews praise transcription accuracy (${r2(accuracy.avg_rating)} stars), and many one-star limit reviews say the dictation still works.`}] : [])],
+      insight: 'The product did not get worse; the deal did. A cap on something that was unlimited is read as a loss, and the heaviest free users, whose reviews recruited everyone else, became the loudest. Wispr wants revenue from exactly those users; those users want the thing they were given.',
+      hypothesis: 'A meter and a warning before the cap, plus a grandfathered allowance for users who were heavy before it, keep more of the pre-cap cohort at 30 days than the hard stop, with no loss in upgrades. Test on the cohort active in the month before the cap.',
       more: opportunityJump('i_word_limit', 'See the word-limit opportunity')}); }
 
-  // 3. Each platform has its own way in, and its own complaint about it.
-  const bubble = cat('Floating Bubble & Overlay'), handoff = cat('Keyboard & App Switching');
-  const showBubble = bubble && !isSmall(bubble) && state.platform !== 'ios', showHandoff = handoff && !isSmall(handoff) && state.platform !== 'android';
-  if (showBubble || showHandoff) { const gone = insightCount('i_bubble_gone'), bank = insightCount('i_banking'), sw = insightCount('i_switch'), kb = insightCount('i_keyboard');
-    const bubbleText = showBubble ? `On Android, ${nf(complaints(bubble))} complaints are about the floating bubble (${r2(bubble.avg_rating)} stars)${gone ? `: ${nf(gone)} say it disappears` : ''}${gone && bank ? `, and ${nf(bank)} say banking apps refuse to open while it is on` : ''}.` : '';
-    const handoffText = showHandoff ? `On iPhone, ${nf(complaints(handoff))} complaints are about the keyboard and hand-off (${r2(handoff.avg_rating)} stars)${sw ? `: ${nf(sw)} describe being sent out of their app to start dictating` : ''}${sw && kb ? `, and ${nf(kb)} say the Flow keyboard is worse to type on` : ''}.` : '';
-    points.push({chart: 'satisfaction', see: 'Satisfaction by category', title: showBubble && showHandoff ? 'How you start a dictation is the complaint on both phones' : showBubble ? 'The floating bubble is the Android weak point' : 'On iPhone, the hand-off cancels the time saved',
-      evidence: [bubbleText, handoffText].filter(Boolean).join(' '),
-      action: (showBubble ? 'Android: log how often the overlay or accessibility service is killed or loses its permission, by phone maker and Android version, and give the app a health check that says why the bubble is missing with a one-tap fix. List which banking apps block it and test a user-editable exclusion list. ' : '') + (showHandoff ? 'iPhone: measure time from tapping the mic to the first word captured and how many sessions are abandoned in between, then compare first-week retention of iPhone-only users with users who also have the desktop app.' : ''),
-      more: opportunityJump(showBubble ? 'i_bubble' : 'i_switch', showBubble ? 'See the bubble opportunities' : 'See the hand-off opportunity')}); }
+  // 2. Flow wins the transcription and loses the tap.
+  const apple = comp('Apple Dictation'), bubble = cat('Floating Bubble & Overlay'), handoff = cat('Keyboard & App Switching'), skH = skew('Keyboard & App Switching');
+  if (apple && (ok(bubble) || ok(handoff))) { const appleAcc = apple.over.find(o => o[0] === 'Transcription Accuracy'), sw = insightCount('i_switch'), gone = insightCount('i_bubble_gone'), bank = insightCount('i_banking');
+    points.push({chart: 'competitors', see: 'Competitors named', title: 'Flow wins the transcription and loses the tap',
+      findings: [{source: REV, text: `Apple Dictation is named in ${nf(apple.count)} ${scopeNote}reviews, ${nf(apple.praise)} praise against ${nf(apple.complaints)} complaints (${r2(apple.avg_rating)} stars)${appleAcc ? `, ${x(appleAcc[2])} over-represented in accuracy reviews` : ''}: people name the built-in dictation to say Flow hears better.`},
+        ...(ok(handoff) ? [{source: REV, text: `${nf(complaints(handoff))} complaints are about the keyboard and hand-off (${r2(handoff.avg_rating)} stars)${skH && all ? `, ${ratePct(skH.ios_pct)}% from iPhone` : ''}${sw ? `; ${nf(sw)} describe being sent out of their app to dictate` : ''}.`}] : []),
+        ...(ok(bubble) ? [{source: REV, text: `${nf(complaints(bubble))} complaints are about the Android bubble (${r2(bubble.avg_rating)} stars)${votesFor('Floating Bubble & Overlay') ? `, with ${votesFor('Floating Bubble & Overlay')} its share of helpful votes` : ''}${gone ? `; ${nf(gone)} say it disappears` : ''}${bank ? `, ${nf(bank)} say banking apps block it` : ''}.`}] : [])],
+      insight: 'People judge dictation by the first tap, not the last word. The phone gives its own dictation the tap for free, on every keyboard, with no overlay to grant. Flow wins the transcription and loses the entry, and every step it adds before the first word spends the accuracy advantage it is named for.',
+      hypothesis: 'Time from intent to first word, by platform, predicts weekly retention better than accuracy does. Cutting it on iPhone (dictate from the keyboard without leaving the app) and on Android (a bubble that survives) lifts retention more than the next accuracy gain.',
+      more: opportunityJump(ok(handoff) ? 'i_switch' : 'i_bubble', ok(handoff) ? 'See the hand-off opportunity' : 'See the bubble opportunities')}); }
 
-  // 4. The people who never got to dictate.
-  const door = ['Login & Account', 'Setup & Permissions', 'Privacy & Security'].map(cat).filter(c => c && !isSmall(c));
-  if (door.length) { const total = door.reduce((sum, c) => sum + complaints(c), ui.zero), weighted = door.reduce((sum, c) => sum + c.avg_rating * c.count, ui.zero) / door.reduce((sum, c) => sum + c.count, ui.zero), stuck = insightCount('i_perm_stuck');
-    const topics = {'Login & Account': 'sign-in', 'Setup & Permissions': 'setup and permission screens', 'Privacy & Security': 'the access the app asks for'}, named = door.map(c => topics[c.name]);
-    points.push({chart: 'satisfaction', see: 'Satisfaction by category', title: 'The lowest ratings come from people who never got to dictate',
-      evidence: `${nf(total)} ${scopeNote}complaints are about ${named.length > ui.two ? `${named.slice(ui.zero, -ui.one).join(', ')}, and ${named.at(-ui.one)}` : named.join(' and ')}. ${door.length > ui.one ? 'Those topics average' : 'That topic averages'} ${r2(weighted)} stars${door.length > ui.one ? ` (${door.map(c => `${c.name} ${r2(c.avg_rating)}`).join(', ')})` : ''}.${stuck ? ` ${nf(stuck)} say they could not finish setup.` : ''}`,
-      action: 'Pull the first-run funnel by platform, phone maker, and sign-in method: install, account created, each permission granted, first dictation. Find the step with the largest drop before spending more on acquisition. On the access screen, test answering the two questions reviewers ask: what the access is used for, and whether audio and text are stored.',
-      more: opportunityJump('i_login', 'See the sign-in and setup opportunities')}); }
+  // 3. The permission screen is the first review.
+  const privacy = cat('Privacy & Security'), setup = cat('Setup & Permissions'), login = cat('Login & Account');
+  if (ok(privacy) && ok(setup)) { const full = insightCount('i_privacy');
+    points.push({chart: 'satisfaction', see: 'Satisfaction by category', title: 'The permission screen is the first review, and the OS writes it',
+      findings: [{source: REV, text: `${nf(complaints(privacy))} ${scopeNote}complaints are about the access Flow asks for (${r2(privacy.avg_rating)} stars)${full ? `; ${nf(full)} name full keyboard or accessibility access as the worry` : ''}. Setup ${r2(setup.avg_rating)} stars${ok(login) ? `, login ${r2(login.avg_rating)}` : ''}: the lowest-rated areas on the page.`},
+        ...(votesFor('Login & Account') && votesFor('Productivity & Time Saved') ? [{source: REV, text: `On Google Play, login complaints get ${votesFor('Login & Account')} their share of helpful votes; praise for time saved gets ${votesFor('Productivity & Time Saved')}.`}] : []),
+        ...(ok(accuracy) && ok(prod) ? [{source: REV, text: `The people who get past the door rate accuracy ${r2(accuracy.avg_rating)} and time saved ${r2(prod.avg_rating)}.`}] : [])],
+      insight: 'Flow needs full keyboard access and an accessibility service to work in every app, which is exactly what spyware asks for. The people who refuse never dictate a word, never see the accuracy everyone else praises, and leave the lowest ratings on the page.',
+      hypothesis: 'A permission screen that answers the two questions reviewers ask (what the access is used for, and whether audio and text are stored) raises the grant rate and the first-dictation rate with no other change. Test on new installs, by platform.',
+      more: opportunityJump(full ? 'i_privacy' : 'i_setup', 'See the setup and privacy opportunities')}); }
 
-  // 5. Accuracy and language cut both ways.
-  const lang = cat('Language Support');
-  if (accuracy && !isSmall(accuracy)) { const added = insightCount('i_added_words'), wrongLang = insightCount('i_wrong_lang');
-    points.push({chart: 'about', see: 'What reviews are about', title: 'Accuracy is the reason people stay, and it is not even across languages',
-      evidence: `${nf(accuracy.by_label[praiseLabel])} ${scopeNote}reviews praise accuracy; ${nf(complaints(accuracy))} report wrong, dropped, or invented words (${share(complaints(accuracy), accuracy.count)} of ${nf(accuracy.count)}).${lang && !isSmall(lang) ? ` Language reviews hold ${nf(lang.by_label[praiseLabel])} praise and ${nf(complaints(lang))} complaints.` : ''}${wrongLang ? ` ${nf(wrongLang)} say the wrong language or script came out.` : ''}${added ? ` ${nf(added)} say words appeared that they did not say.` : ''}`,
-      action: `Treat the ${nf(complaints(accuracy))} accuracy complaints as a seed test set. Group them by failure type (misheard, dropped, invented, start clipped) and by language, then score the current model on recordings that reproduce each group. Break accuracy and retention out by dictation language before choosing where to invest; a per-user language lock is the fix reviewers describe for wrong-language output.`,
-      more: deepJump('categories', accuracy.name, 'Read the accuracy reviews')}); }
+  // 4. Android's rating is a history of its launch.
+  const endMonth = (summary.meta?.date_range?.end || '').slice(ui.zero, 7), M = (F.monthly || []).filter(m => m.month < endMonth && m.android && m.ios && m.android.n >= 50 && m.ios.n >= 50), launch = (F.spikes || []).filter(q => q.versions[ui.zero]?.platform === 'android' && q.versions[ui.zero]?.version.startsWith('1.0'));
+  if (all && M.length >= 3 && summary.android?.stats?.count && summary.ios?.stats?.count) { const firstM = M[ui.zero], lastM = M.at(-ui.one);
+    points.push({chart: 'about', see: 'What reviews are about', title: "Android's rating is a history of its launch, not of the app people install today",
+      findings: [{source: REV, text: `Android averages ${r2(summary.android.stats.avg_rating)} stars against ${r2(summary.ios.stats.avg_rating)} on iPhone. By month, Android went from ${r2(firstM.android.avg_rating)} in ${monthName(firstM.month)} (${nf(firstM.android.n)} reviews) to ${r2(lastM.android.avg_rating)} in ${monthName(lastM.month)} (${nf(lastM.android.n)}); iPhone ${r2(firstM.ios.avg_rating)} to ${r2(lastM.ios.avg_rating)}.`},
+        ...(launch.length ? [{source: REV, text: `In the week of ${dateText(launch[ui.zero].week)}, on Android ${launch[ui.zero].versions[ui.zero].version}, complaints about ${launch.map(q => `${q.category.toLowerCase()} (${nf(q.count)})`).join(', ')} all spiked at once: the launch week.`}] : [])],
+      insight: 'Google Play shows the lifetime average, so every new Android user meets the launch week before they meet the product, while iPhone users meet a mature one. The gap between the platforms is mostly a gap in time.',
+      hypothesis: 'Asking for a review after a successful dictation on current Android builds moves the visible average faster than any fix, because the current experience already rates near iPhone. Track the store average and a 30-day rolling average separately.',
+      more: deepJump('categories', 'Reliability & Bugs', 'Read the reliability reviews', 'android')}); }
 
-  // 6. The phone's own dictation is the competitor.
-  const rivals = data.competitors.filter(c => c.count && c.name !== 'Other').sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  if (rivals.length > ui.one && s.pct_low_star) { const [top, next] = rivals, lowStars = top.star_counts[0] + top.star_counts[1], highStars = top.star_counts[3] + top.star_counts[4], wins = insightCount('s_vs_native');
-    points.push({chart: 'competitors', see: 'Competitors named', title: 'The real competitor is the dictation already on the phone',
-      evidence: `${top.name} appears in ${nf(top.count)} ${scopeNote}reviews and ${next.name} in ${nf(next.count)}, the two products named most. Of the reviews naming ${top.name}, ${share(highStars, top.count)} give 4 or 5 stars and ${share(lowStars, top.count)} give 1 or 2, against ${pct(s.pct_low_star)} low-star across all ${scopeNote}reviews.${wins ? ` ${nf(wins)} reviews praise ${summary.meta.product.name} as better than the built-in option.` : ''}`,
-      action: `Read the ${nf(lowStars)} low-star ${top.name} reviews for what the free option does well enough: a star rating does not say who switched back, so read the text. Keep a side-by-side accuracy benchmark against both built-in options and show it in onboarding. The free alternative also sets how a word cap is judged, so read these next to the limit reviews.`,
-      more: {text: `Read the reviews naming ${top.name}`, href: `#reviews?${new URLSearchParams({platform: state.platform})}`, onClick: () => { resetReviewFilters(); state.filters.competitor = top.name; navigate('reviews'); }}}); }
+  // 5. The feature requests come from the happiest users.
+  const FS = F.five_star, parity = cat('Desktop & Platform Parity');
+  if (FS && FS.by['Desktop & Platform Parity'] && ok(parity)) { const top = Object.entries(FS.by).filter(([n]) => n !== 'Other').sort((a, b) => b[1].five_pct - a[1].five_pct).slice(ui.zero, 3), skP = skew('Productivity & Time Saved');
+    points.push({chart: 'about', see: 'What reviews are about', title: 'The feature requests come from the happiest users',
+      findings: [{source: REV, text: `${top.map(([n, v]) => `${ratePct(v.five_pct)}% of ${scopeNote}${n.toLowerCase()} complaints give five stars`).join(', ')}, against ${ratePct(FS.base_pct)}% of all complaints.`},
+        {source: REV, text: `Desktop & Platform Parity holds ${nf(praise(parity))} praise and ${nf(complaints(parity))} complaints (${r2(parity.avg_rating)} stars); the asks are Chromebook, tablet and desktop.${skP && all ? ` Praise for time saved is ${ratePct(skP.ios_pct)}% iPhone against ${ratePct(F.skew.ios_base_pct)}% of all reviews.` : ''}`}],
+      insight: 'The requests for desktop, tablet and editing features come from the happiest users, the ones already dictating on two devices. Those complaints predict expansion, not churn; the label calls them complaints, the star says they are a shopping list.',
+      hypothesis: 'A second-device prompt shown to users who rate the mobile app 4+ in-app converts to a desktop or tablet install at a higher rate than any marketing channel. Measure second-device activation within 14 days.',
+      more: opportunityJump('f_parity', 'See the parity requests')}); }
+
+  // 6. "It fails" mostly means the chain before the model broke.
+  const bugs = cat('Reliability & Bugs'), br = pair('Floating Bubble & Overlay', 'Reliability & Bugs'), bsu = pair('Reliability & Bugs', 'Setup & Permissions'), skB = skew('Reliability & Bugs');
+  if (ok(bugs)) { const nothing = insightCount('i_nothing');
+    points.push({chart: 'about', see: 'What reviews are about', title: '"It fails" mostly means the chain before the model broke',
+      findings: [{source: REV, text: `${nf(complaints(bugs))} ${scopeNote}complaints are about dictation that fails, hangs or does not paste (${r2(bugs.avg_rating)} stars)${skB && all ? `, ${ratePct(100 - skB.ios_pct)}% of them on Android against ${ratePct(100 - F.skew.ios_base_pct)}% of all reviews` : ''}${nothing ? `; ${nf(nothing)} describe speaking and getting nothing back` : ''}.`},
+        ...(br || bsu ? [{source: REV, text: `${br ? `${nf(br.count)} of them also name the bubble` : ''}${br && bsu ? ' and ' : ''}${bsu ? `${nf(bsu.count)} name setup or permissions (${x(bsu.lift)} what chance would give)` : ''}. The top reliability topics are the transcription failing and the bubble disappearing.`}] : []),
+        ...(ok(accuracy) ? [{source: REV, text: `When it runs, it is praised: ${nf(praise(accuracy))} accuracy reviews at ${r2(accuracy.avg_rating)} stars.`}] : [])],
+      insight: 'A failed dictation is usually the chain before the model breaking: an overlay the phone maker killed, an accessibility service that was revoked, a banking app that refused the bubble. The model is praised in the same reviews. Flow owns the model and not the chain, and the reviews blame it for both.',
+      hypothesis: 'Dictation success measured from intent (bubble tap or keyboard mic) to text in the field, split by phone maker and Android version, will show failures concentrated in overlay and permission loss, not transcription. A health check that says why the bubble is gone, with a one-tap fix, raises success more than model work.',
+      more: opportunityJump('i_fails', 'See the reliability opportunities')}); }
 
   // Fallback so every scope shows six: the star average against the text.
-  const five = data.ratings.find(r => r.value === ui.rating_max);
-  if (points.length < 6 && five && s.substantive) points.push({chart: 'stars-sentiment', see: 'Stars vs sentiment',
-    title: s.avg_rating > s.avg_sentiment ? 'The star average hides the problems' : 'The words run warmer than the stars',
-    evidence: `${share(five.stars, s.count)} of ${scopeNote}reviews give ${ui.rating_max} stars, but only ${share(five.sentiment, s.sentiment_n)} read as a ${ui.rating_max} from the text. Average stars ${r2(s.avg_rating)}, average sentiment ${r2(s.avg_sentiment)}.`,
-    action: `Track specific complaints as a share of substantive reviews (${nf(sc)} of ${nf(s.substantive)}, ${share(sc, s.substantive)}) beside the star average. The weekly star average moved ${r2(weekSwing)} across ${weeks.length} weeks; check the low weeks against release dates before reading them as noise.`,
+  const fiveStars = data.ratings.find(r => r.value === ui.rating_max), sc = data.labels[complaintLabel].count;
+  if (points.length < 6 && fiveStars && s.substantive) points.push({chart: 'stars-sentiment', see: 'Stars vs sentiment', title: s.avg_rating > s.avg_sentiment ? 'The star average hides the problems' : 'The words run warmer than the stars',
+    findings: [{source: REV, text: `${share(fiveStars.stars, s.count)} of ${scopeNote}reviews give ${ui.rating_max} stars, but only ${share(fiveStars.sentiment, s.sentiment_n)} read as a ${ui.rating_max} from the text. Average stars ${r2(s.avg_rating)}, average sentiment ${r2(s.avg_sentiment)}.`}],
+    insight: `Stars measure the habit; the text measures the day. ${nf(sc)} of ${nf(s.substantive)} substantive reviews (${share(sc, s.substantive)}) are specific complaints the star average absorbs.`,
+    hypothesis: 'Tracking specific complaints as a share of substantive reviews, beside the star average, shows product problems weeks before the rating moves.',
     more: deepJump('labels', complaintLabel, 'Read the specific complaints')});
-
-  return points;
+  return points.slice(ui.zero, 6);
 }
 // The next step sits behind a disclosure so a card reads as one line of evidence until the reader asks for more.
-function nextStep(text, more) {
-  const details = node('details', undefined, 'next-step'), summary = node('summary'); summary.append(icon('arrow'), node('span', 'Next step')); details.append(summary, node('p', text));
+function nextStep(text, more, label = 'Next step') {
+  const details = node('details', undefined, 'next-step'), summary = node('summary'); summary.append(icon('arrow'), node('span', label)); details.append(summary, node('p', text));
   if (more) { const link = node('a', undefined, 'key-point-link secondary'); link.href = more.href; link.append(node('span', more.text), icon('arrow')); if (more.onClick) link.addEventListener('click', event => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); more.onClick(); }); details.append(link); }
   return details;
+}
+// One card: findings (each tagged with its source), the insight they add up to, and the hypothesis to test.
+function insightCard(point, index, idPrefix) {
+  const n = index + ui.one, item = node('li', undefined, 'key-point'); item.id = `${idPrefix}-${n}`;
+  item.append(node('p', String(n).padStart(ui.two, '0'), 'key-point-index'), node('h3', point.title), node('p', 'Findings', 'kp-label'));
+  const findings = node('ol', undefined, 'findings');
+  for (const f of point.findings.filter(f => f.text)) { const li = node('li'); li.append(node('span', f.source, 'src-tag'), node('span', f.text)); findings.append(li); }
+  item.append(findings, node('p', 'Insight', 'kp-label'), node('p', point.insight, 'key-point-evidence'), nextStep(point.hypothesis, point.more, 'Hypothesis to test'));
+  return item;
 }
 function takeaways(points) {
   const list = node('ol', undefined, 'key-points');
   points.forEach((point, index) => {
-    const n = index + ui.one, item = node('li', undefined, 'key-point'); item.id = `takeaway-${n}`;
-    const link = node('a', undefined, 'key-point-link');
+    const item = insightCard(point, index, 'takeaway'), link = node('a', undefined, 'key-point-link');
     link.href = chartHref(point.chart); link.append(node('span', `See chart: ${point.see}`), icon('arrow'));
     link.addEventListener('click', event => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); jumpToChart(point.chart); });
-    item.append(node('p', String(n).padStart(ui.two, '0'), 'key-point-index'), node('h3', point.title), node('p', point.evidence, 'key-point-evidence'), nextStep(point.action, point.more), link); list.append(item);
+    item.append(link); list.append(item);
   });
   return list;
 }
@@ -234,7 +257,7 @@ function overview() {
   root.append(lead);
 
   const weeks = data.weekly, points = takeawayPoints(data, weeks, categoryEntries(data.categories)), backlinks = chart => takeawayLinks(points, chart);
-  root.append(sectionHeading('Key takeaways', `${platformName(state.platform)} · what the reviews show and the next check for each · store reviews are self-selected, so treat these as signals to investigate, not validated problems`), takeaways(points));
+  root.append(sectionHeading('Insights', `${platformName(state.platform)} · findings + findings = insight = hypothesis · each card adds up two or three findings from different cuts of the reviews into the tension behind them, then the idea to test · store reviews are self-selected, so these are hypotheses, not validated problems`), takeaways(points));
 
   const weekLabels = weeks.map(w => new Date(w.week).toLocaleDateString('en-US', {month: 'short', day: 'numeric', timeZone: 'UTC'}));
   const trend = node('div', undefined, 'grid'), thin = w => w.volume < ui.small_category;

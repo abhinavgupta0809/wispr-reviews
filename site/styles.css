@@ -372,3 +372,9 @@ body.drawer-open { overflow: hidden; }
   .row-link:hover { background: color-mix(in srgb, var(--mark) 18%, transparent); }
   .table-wrap td a:hover { text-decoration-color: var(--brand); }
 }
+
+/* Insight cards: findings (tagged by source) -> insight -> hypothesis */
+.kp-label { color: var(--text-3); font: 500 11px/14px var(--font-mono); text-transform: uppercase; letter-spacing: .04em; margin-top: 6px; }
+.findings { margin: 0; padding-left: 18px; display: grid; gap: 5px; color: var(--text-2); font-size: 12.5px; line-height: 18px; }
+.findings li::marker { color: var(--text-3); font: 500 11px var(--font-mono); }
+.src-tag { display: inline-block; margin-right: 6px; padding: 0 5px; border: 1px solid var(--border); border-radius: 4px; color: var(--text-3); font: 500 10.5px/16px var(--font-mono); vertical-align: 1px; white-space: nowrap; }
